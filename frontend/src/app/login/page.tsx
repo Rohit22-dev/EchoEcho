@@ -24,7 +24,7 @@ const Login = () => {
     >
       <div className="bg-background h-screen w-screen flex flex-col gap-5 ">
         <Header />
-        <div className="flex flex-1 justify-center items-center">
+        <div className="flex flex-1 justify-center items-center p-6">
           <Tabs defaultValue="login" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
