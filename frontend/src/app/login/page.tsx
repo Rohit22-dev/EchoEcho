@@ -2,16 +2,6 @@ import { ProfileForm } from "@/components/Form";
 import Header from "@/components/Header";
 import { ThemeProvider } from "@/components/theme-provider";
 import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Login = () => {
@@ -22,35 +12,24 @@ const Login = () => {
       enableSystem
       disableTransitionOnChange
     >
-      <div className="bg-background h-screen w-screen flex flex-col gap-5 ">
-        <Header />
-        <div className="flex flex-1 justify-center items-center p-6">
-          <Tabs defaultValue="login" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Regsiter</TabsTrigger>
-            </TabsList>
-            <TabsContent value="login">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Welcome again</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProfileForm />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="register">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Welcome to Echo</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProfileForm register={true} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+      <div className="bg-background h-screen w-screen flex flex-col">
+        {/* <Header /> */}
+        <div className="flex flex-1">
+          <div className="hidden lg:flex container w-2/5 h-full border-r bg-primary justify-center p-8">Hello</div>
+          <div className="w-full sm:w-3/5 p-8 mx-auto">
+            <Tabs defaultValue="login" className="space-y-6 mt-8 mx-auto xl:w-1/2">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="register">Regsiter</TabsTrigger>
+              </TabsList>
+              <TabsContent value="login">
+                <ProfileForm />
+              </TabsContent>
+              <TabsContent value="register">
+                <ProfileForm register={true} />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
     </ThemeProvider>

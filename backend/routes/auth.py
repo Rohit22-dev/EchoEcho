@@ -30,9 +30,13 @@ async def signup(user: User):
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
     user.password = get_password_hash(user.password)
+    
     # If the user doesn't exist, create a new one
     user_collection.insert_one(dict(user))
-    return {"message": "User created successfully"}
+
+    # Automatically log in the user after signup
+    login_user = LoginSchema(email=user.email, password=user.password)
+    return await login(login_user)
 
 
 @handle_errors
