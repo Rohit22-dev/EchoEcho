@@ -16,17 +16,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
+import axios from "axios"
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { cookies } from "next/headers";
+import Cookies from "js-cookie";
 
 export function ProfileForm({ register = false }) {
   const [load, setLoad] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const cookieStore = cookies();
   const formSchema = z.object({
     email: z.string().email({
       message: "Invalid email format.",
@@ -75,11 +74,12 @@ export function ProfileForm({ register = false }) {
           description: "User created successfully",
         });
         const oneDay = 24 * 60 * 60 * 1000;
-        cookieStore.set("access_token", res.data.access_token, {
+        Cookies.set("access_token", res.data.access_token, {
           expires: Date.now() - oneDay,
         });
         router.push("/");
       } else {
+        console.log("Logging in user...", values)
         const res = await axios.post(
           "http://localhost:8000/auth/login",
           values
@@ -88,7 +88,7 @@ export function ProfileForm({ register = false }) {
           description: "Login successful",
         });
         const oneDay = 24 * 60 * 60 * 1000;
-        cookieStore.set("access_token", res.data.access_token, {
+        Cookies.set("access_token", res.data.access_token, {
           expires: Date.now() - oneDay,
         });
         router.push("/");

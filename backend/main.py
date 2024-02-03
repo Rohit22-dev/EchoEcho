@@ -8,7 +8,7 @@ app = FastAPI()
 
 # Define allowed origins, methods, and headers for CORS
 origins = [
-    "https://3000-monospace-echoecho-1706390169368.cluster-22qpi2wzsjc4utjzyqn2yu6ar6.cloudworkstations.dev", "https://3000-monospace-echoecho-1706390169368.cluster-22qpi2wzsjc4utjzyqn2yu6ar6.cloudworkstations.dev/login", "http://localhost:8000"
+    "https://3000-monospace-echoecho-1706390169368.cluster-22qpi2wzsjc4utjzyqn2yu6ar6.cloudworkstations.dev", "https://3000-monospace-echoecho-1706390169368.cluster-22qpi2wzsjc4utjzyqn2yu6ar6.cloudworkstations.dev/login", "http://localhost:3000"
     # Add more origins as needed
 ]
 
