@@ -14,6 +14,7 @@ class DatabaseConnection:
 db_instance = DatabaseConnection.get_instance()
 db = db_instance.social
 user_collection = db['users']
+post_collection = db['posts']
 
 
 user_collection.create_index([("email", 1), ("username", 1)], unique=True)

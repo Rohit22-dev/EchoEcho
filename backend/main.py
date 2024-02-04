@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.auth import auth
+from routes.posts import post
 
 
 app = FastAPI()
@@ -22,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(auth, prefix='/auth')
+app.include_router(post, prefix='/post')
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="localhost", port=8000, reload=True)

@@ -18,7 +18,6 @@ const useAccessTokenCheck = () => {
   React.useEffect(() => {
     const checkCookie = async () => {
       const timer = setTimeout(() => {
-        // Your code here
         const accessToken = Cookies.get("access_token");
         if (accessToken) {
           router.push("/");
