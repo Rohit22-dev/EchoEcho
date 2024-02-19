@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React,{useEffect, useState} from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/Header";
 import { Separator } from "@/components/ui/separator";
@@ -10,35 +10,39 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import Loading from "@/components/Loading";
 import Posts from '@/components/Home/Posts'
+import PostForm from "@/components/Home/PostForm";
+import { Loader } from "@/components/helper/Helper";
 
 const useAccessTokenCheck = () => {
   const router = useRouter();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  // React.useEffect(() => {
-  //   const checkCookie = async () => {
-  //     const timer = setTimeout(() => {
-  //       const accessToken = Cookies.get("access_token");
-  //       if (accessToken) {
-  //         router.push("/");
-  //       } else {
-  //         router.push("/login");
-  //       }
-  //       setLoading(false);
-  //     }, 5000);
 
-  //     () => clearTimeout(timer);
-  //   };
+  useEffect(() => {
+    const checkCookie = async () => {
+      const timer = setTimeout(() => {
+        const accessToken = Cookies.get("access_token");
+        if (accessToken) {
+          router.push("/");
+        } else {
+          router.push("/login");
+        }
+        setLoading(false);
+      }, 5000);
 
-  //   checkCookie();
-  // }, [router]);
+      () => clearTimeout(timer);
+    };
+
+    checkCookie();
+  }, []);
 
   return loading;
 };
 
 // Define the Page component
 const Page = () => {
-  const loading = useAccessTokenCheck(); // Use the custom React Hook
+  const loading = useAccessTokenCheck();
+  const [posting, setPosting] = useState<boolean>(false);
 
 
   return (
@@ -57,6 +61,8 @@ const Page = () => {
 
             <div className="justify-center p-6 w-1/4 hidden md:flex h-full">
               <User />
+              <PostForm setPosting={setPosting} />
+              {posting && <Loader text="Posting" loadState={posting}/>}
             </div>
 
             <Separator orientation="vertical" />

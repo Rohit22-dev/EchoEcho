@@ -16,11 +16,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import axios from "axios"
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { FcGoogle } from "react-icons/fc";
+import { FaLinkedin } from "react-icons/fa";
+import supabase from '../../supabase'
 
 export function ProfileForm({ register = false }) {
   const [load, setLoad] = useState(false);
@@ -61,38 +63,44 @@ export function ProfileForm({ register = false }) {
     },
   });
 
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { email, password, username } = values;
+
     try {
       setLoad(true);
       if (register) {
-        const res = await axios.post(
-          "http://localhost:8000/auth/signup",
-          values
-        );
+        const res = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${location.origin}/auth/callback`,
+            data: { 'username':username },
+          },
+        });
         toast({
-          description: "User created successfully",
+          description: "Open email to confirm your account.",
         });
-        const oneDay = 24 * 60 * 60 * 1000;
-        Cookies.set("access_token", res.data.access_token, {
-          expires: Date.now() - oneDay,
-        });
-        router.push("/");
+        router.refresh();
       } else {
-        console.log("Logging in user...", values)
-        const res = await axios.post(
-          "http://localhost:8000/auth/login",
-          values
-        );
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        // console.log(res)
+        if (error) {
+          throw error;
+        }
+        const { access_token, refresh_token, expires_at } = data.session;
+        const expirationTime = expires_at! * 1000;
+
+        const expirationDate = new Date(expirationTime);
+        Cookies.set("access_token", access_token, { expires: expirationDate });
+        Cookies.set("refresh_token", refresh_token);
         toast({
           description: "Login successful",
         });
-        const oneDay = 24 * 60 * 60 * 1000;
-        Cookies.set("access_token", res.data.access_token, {
-          expires: Date.now() - oneDay,
-        });
         router.push("/");
-        // console.log("Logging in user...", res);
+        // console.log("Logging in user...", res);mu
       }
       setLoad(false);
     } catch (error) {
@@ -100,88 +108,136 @@ export function ProfileForm({ register = false }) {
     }
   }
 
+  async function googleAuth() {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+      if (error) {
+        throw error;
+      }
+      console.log(data);
+    } catch (error) {
+      // Handle sign-in error
+      console.error("Error:", error);
+    }
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {register && (
+    <div className="flex flex-col gap-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          {register && (
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your username" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This is your public display name.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your username" {...field} />
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    {...field}
+                  />
                 </FormControl>
                 <FormDescription>
-                  This is your public display name.
+                  Please enter a valid email address.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-        )}
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="Enter your email" {...field} />
-              </FormControl>
-              <FormDescription>
-                Please enter a valid email address.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Enter your password"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Password must be at least 8 characters long and contain at least{" "}
-                <br /> one lowercase letter, one uppercase letter, and one
-                symbol.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Enter your password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Password must be at least 8 characters long and contain at
+                  least <br /> one lowercase letter, one uppercase letter, and
+                  one symbol.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Button type="submit" disabled={load}>
-          {load && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
-          {load ? (register ? "Registering..." : "loading...") : "Submit"}
+          <Button type="submit" disabled={load} className="w-full">
+            {load && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+            {load ? (register ? "Registering..." : "loading...") : "Submit"}
+          </Button>
+
+          <div className="flex items-center gap-1.5">
+            <span className="border border-secondary flex-1 h-0 " />
+            <p>OR CONTINUE WITH</p>
+            <span className="border border-secondary flex-1 h-0" />
+          </div>
+        </form>
+      </Form>
+
+      {/* SignIn buttons */}
+      <div className="flex gap-8">
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={googleAuth}
+          disabled
+        >
+          <FcGoogle className="mr-2" size={18} /> Google
         </Button>
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          By clicking continue, you agree to our{" "}
-          <Link
-            href="/terms"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="/privacy"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Privacy Policy
-          </Link>
-          .
-        </p>
-      </form>
-    </Form>
+        <Button variant="secondary" className="w-full" disabled>
+          <FaLinkedin className="mr-2 text-primary" size={18} /> Linkedin
+        </Button>
+      </div>
+      <p className="px-8 text-center text-sm text-muted-foreground">
+        By clicking continue, you agree to our{" "}
+        <Link
+          href="/terms"
+          className="underline underline-offset-4 hover:text-primary"
+        >
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link
+          href="/privacy"
+          className="underline underline-offset-4 hover:text-primary"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
+    </div>
   );
 }

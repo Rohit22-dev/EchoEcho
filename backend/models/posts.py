@@ -11,9 +11,9 @@ class Comment(BaseModel):
     content: str
 
 class Post(BaseModel):
-    _id: str | None
+    _id: Optional[str] = None
     user: User
-    image: {} 
+    image: Optional[dict] =  None 
     content: Optional[str] = None
     likes: List[User] = []
     comments: List[Comment] = []

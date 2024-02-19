@@ -40,7 +40,7 @@ const dummy_posts = [
     content: "This is a dummy post for the frontend.",
     likes: [{ id: 2, username: "Jane Doe" }],
     comments: [
-      {
+      { 
         user: { id: 3, username: "Foo Bar" },
         content: "This is a dummy comment.",
       },

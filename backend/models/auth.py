@@ -4,8 +4,8 @@ from datetime import datetime
 
 
 class User(BaseModel):
-    _id: str | None
-    username: str
+    _id: Optional[str] = None
+    username: str 
     password: str
     email: str
     posts: List[str] = []
@@ -24,10 +24,10 @@ class OTPData(BaseModel):
 
 
 class Token(BaseModel):
-    access_token: str | None
+    access_token: Optional[str] = None
     token_type: str
 
 
 class TokenData(BaseModel):
-    username: str | None = None
+    username: Optional[str] = None
 
