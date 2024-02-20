@@ -18,6 +18,7 @@ import { toast } from "../ui/use-toast";
 import { v4 as uuidv4 } from "uuid";
 import { createClient } from "@supabase/supabase-js";
 import { FetchProfile } from "../helper/Helper";
+import supabase from "../../../supabase";
 
 
 type UpdateFormData = {
@@ -45,10 +46,6 @@ interface EditProfileFormProps {
 
 
 const EditProfileForm:React.FC<EditProfileFormProps> = ({ updating, setUpdating }) => {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
   useEffect(() => {
@@ -111,8 +108,6 @@ const EditProfileForm:React.FC<EditProfileFormProps> = ({ updating, setUpdating 
       }
     }
 
-    filteredData["updated_at"] = new Date().toISOString();
-    console.log(filteredData)
 
     const { data, error } = await supabase
       .from("profiles")

@@ -25,46 +25,91 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import zod from "zod";
 import { Textarea } from "@/components/ui/textarea";
+import { v4 as uuidv4 } from "uuid";
+import supabase from "../../../supabase";
+import { FetchProfile } from "../helper/Helper";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
-
-
-const PostForm = ({setPosting}:{ setPosting: (value: boolean) => void }) => {
+const PostForm = ({ setPosting }: { setPosting: (value: boolean) => void }) => {
   const [imagePreview, setImagePreview] = useState<string | undefined>();
+  const router = useRouter()
+
 
   const formSchema = z.object({
     description: z.string().min(1, {
       message: "Description is required.",
     }),
-    image: zod.optional(z.any()),
+    postImage: z.any(),
   });
 
+  // const [selectedImage, setSelectedImage] = (useState < File) | (null > []);
   const form = useForm<z.infer<typeof formSchema>>({
-  resolver: zodResolver(formSchema),
-  defaultValues: {
-    description: "",
-    image: undefined,
-  },
-});
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      description: "",
+      postImage: undefined,
+    },
+  });
 
+  function getImageData(event: ChangeEvent<HTMLInputElement>) {
+    // FileList is immutable, so we need to create a new one
+    const dataTransfer = new DataTransfer();
+  
+    // Add newly uploaded images
+    Array.from(event.target.files!).forEach((image) =>
+      dataTransfer.items.add(image)
+    );
+  
+    const files = dataTransfer.files;
+    const displayUrl = URL.createObjectURL(event.target.files![0]);
+  
+    return { files, displayUrl };
+  }
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>, e: any) => {
+    const { postImage,description } = data;
     setPosting(true);
-  
-    setTimeout(() => {
-      setPosting(false);
-    }, 5000);
+
+    let image_url = "";
+    const profile = await FetchProfile();
+
+    // console.log(image,profile)
+
+    if (postImage) {
+      const { data, error } = await supabase.storage
+        .from("images/posts")
+        .upload("post_" + uuidv4(), postImage[0]);
+      if (error) {
+        console.log(error);
+      } else {
+        image_url = `https://ruyrfyewnfhvqdfygbck.supabase.co/storage/v1/object/public/images/posts/${data.path}`;
+      }
+    }
+
+    const postData = {
+      user_id: profile?.data.id,
+      description: description,
+      image_url: image_url,
+      username: profile?.data.username,
+    };
+
+    const { error } = await supabase.from("posts").insert(postData);
+    form.reset();
+    router.refresh()
+
+    setPosting(false);
   };
-  
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger>
-        <Button variant="outline">
-          <PlusIcon />
-          &nbsp; Open
+      <AlertDialogTrigger asChild>
+        <Button className="w-full font-bold text-2xl h-fit text-background drop-shadow-2xl">
+          <PlusIcon height={30} width={30} />
+          &nbsp; Post
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -73,6 +118,7 @@ const PostForm = ({setPosting}:{ setPosting: (value: boolean) => void }) => {
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete your
             account and remove your data from our servers.
+            <Image className="rounded-md content-center mx-auto my-6" src={imagePreview||"https://github.com/shadcn.png"} alt="Image Preview" height={200} width={200}/>
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -80,14 +126,19 @@ const PostForm = ({setPosting}:{ setPosting: (value: boolean) => void }) => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="image"
-              render={({ field }) => (
+              name="postImage"
+              render={({ field: { onChange, value, ...rest }  }) => (
                 <FormItem>
                   <FormLabel>Image</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
-                      {...field}
+                      {...rest}
+                      onChange={(event) => {
+                        const { files, displayUrl} = getImageData(event)
+                        setImagePreview(displayUrl);
+                        onChange(files);
+                      }}
                     />
                   </FormControl>
                   <FormDescription>
@@ -104,10 +155,7 @@ const PostForm = ({setPosting}:{ setPosting: (value: boolean) => void }) => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="What's on your mind?"
-                      {...field}
-                    />
+                    <Input placeholder="What's on your mind?" {...field} />
                   </FormControl>
                   <FormDescription>
                     Write a description for your post.

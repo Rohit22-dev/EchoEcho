@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Card,
@@ -9,164 +9,180 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import {
-  HandThumbUpIcon as OutlineHandThumbUpIcon,
-  ChatBubbleOvalLeftEllipsisIcon as OutlineComment,
-  RocketLaunchIcon,
-} from "@heroicons/react/24/outline";
-import {
-  HandThumbUpIcon as SolidHandThumbUpIcon,
-  ChatBubbleOvalLeftEllipsisIcon as SolidComment,
-} from "@heroicons/react/24/solid";
+import { BsRocket, BsFillRocketFill } from "react-icons/bs";
+import { HiMiniHandThumbUp, HiOutlineHandThumbUp } from "react-icons/hi2";
+import { BiCommentDetail, BiSolidCommentDetail } from "react-icons/bi";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { PaperPlaneIcon } from "@radix-ui/react-icons"
 import { SkeletonCard } from "../SkeletonCard";
+import supabase from "../../../supabase";
+import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "../ui/use-toast";
+import { FetchProfile } from "../helper/Helper";
 
-const dummy_posts = [
-  {
-    _id: "1",
-    user: { id: 1, username: "John Doe" },
-    image: {
-      image_id: 123,
-      url: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    content: "This is a dummy post for the frontend.",
-    likes: [{ id: 2, username: "Jane Doe" }],
-    comments: [
-      { 
-        user: { id: 3, username: "Foo Bar" },
-        content: "This is a dummy comment.",
-      },
-    ],
-    date: 1677982800,
-  },
-  {
-    _id: "2",
-    user: { id: 2, username: "Jane Doe" },
-    image: {
-      image_id: 234,
-      url: "https://images.unsplash.com/photo-1488716656724-3c8820d714a0?q=80&w=1886&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    content: "This is another dummy post for the frontend.",
-    likes: [],
-    comments: [],
-    date: 1678242000,
-  },
-  {
-    _id: "3",
-    user: { id: 3, username: "Foo Bar" },
-    image: {
-      image_id: 345,
-      url: "https://images.unsplash.com/photo-1438283173091-5dbf5c5a3206?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    content: "This is a third dummy post for the frontend.",
-    likes: [{ id: 1, username: "John Doe" }],
-    comments: [
-      {
-        user: { id: 2, username: "Jane Doe" },
-        content: "This is another dummy comment.",
-      },
-    ],
-    date: 1677468400,
-  },
-  {
-    _id: "4",
-    user: { id: 4, username: "Lorem Ipsum" },
-    image: {
-      image_id: 456,
-      url: "https://images.unsplash.com/photo-1505058567159-6f2a114a1a70?q=80&w=2046&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    content: "This is a fourth dummy post for the frontend.",
-    likes: [],
-    comments: [],
-    date: 1677727600,
-  },
-  {
-    _id: "5",
-    user: { id: 5, username: "Dolor Sit Amet" },
-    image: {
-      image_id: 567,
-      url: "https://images.unsplash.com/photo-1480109866847-0b432ceb666a?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    content: "This is a fifth dummy post for the frontend.",
-    likes: [{ id: 4, username: "Lorem Ipsum" }],
-    comments: [
-      {
-        user: { id: 3, username: "Foo Bar" },
-        content: "This is another dummy comment.",
-      },
-    ],
-    date: 1678070000,
-  },
-];
+interface Post {
+  id: string;
+  description: string;
+  user_id: string;
+  username: string;
+  image_url: string;
+}
 
-const Post = ({ data }: { data: any }) => {
+type ProfileData = {
+  id: string;
+  full_name: string;
+  avatar_url: string;
+  username: string;
+  email: string;
+  about: string;
+};
+
+const Post = ({ item }: { item: any }) => {
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const { status, data, error } = await FetchProfile();
+      if (status === "failed") {
+        toast({
+          variant: "destructive",
+          description: error,
+          title: "Error fetching profile",
+        });
+        router.push("/login");
+      }
+      setProfile(data);
+    };
+
+    getProfile();
+  }, [router]);
+
   const [isLiked, setIsLiked] = React.useState(false);
-  const [isCommentOpen, setIsCommentOpen] = React.useState(false);
+  useEffect(() => {
+    const fetchInitialLikeStatus = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("post_likes")
+          .select("*")
+          .eq("post_id", item.id)
+          .eq("user_id", profile?.id);
+        if (error) {
+          console.error("Error checking like status", error);
+        } else {
+          setIsLiked(data?.length > 0);
+        }
+      } catch (error) {
+        console.error("Error checking like status", error);
+      }
+    };
+    fetchInitialLikeStatus();
+  }, [item.id, profile?.id]);
 
-  const toggleLike = () => {
+  const [isCommentOpen, setIsCommentOpen] = React.useState(false);
+  const [isImageLoading, setIsImageLoading] = React.useState(true);
+  const [isRocket, setIsRocket] = React.useState(true);
+
+  const toggleLike = async () => {
     setIsLiked(!isLiked);
+    {
+      !isLiked
+        ? await supabase
+            .from("post_likes")
+            .insert({ post_id: item.id, user_id: profile?.id })
+        : await supabase.from("post_likes").delete().eq("post_id", item.id);
+    }
+  };
+
+  const toggleRocket = () => {
+    setIsRocket(!isRocket);
   };
 
   const toggleComment = () => {
     setIsCommentOpen(!isCommentOpen);
   };
 
+  const handleImageLoad = () => {
+    setIsImageLoading(false); // Set isImageLoading to false when image is loaded
+  };
+
   return (
     <Card className="w-full bg-secondary/20">
       <CardHeader>
-        <CardTitle>{data.user.username}</CardTitle>
-        <CardDescription>{data.content}</CardDescription>
+        <CardTitle className="text-primary">{item.username}</CardTitle>
+        <CardDescription>{item.description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
+        {isImageLoading && (
+          <Skeleton className="w-full max-h-[500px] bg-gray-200 animate-pulse" />
+        )}
         <Image
-          src={data.image.url}
+          src={item.image_url}
           loading="lazy"
           width={1200}
           height={1200}
           alt="image"
+          onLoad={handleImageLoad}
           className="w-full max-h-[500px] object-cover"
         />
         <TooltipProvider>
-          <div className="flex rounded-md h-16">
+          <div className="flex rounded-md h-fit border">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div
                   onClick={toggleLike}
-                  className="m-3 flex-1 flex text-primary justify-center gap-1 "
+                  className="m-2 flex-1 flex justify-center gap-1 "
                 >
                   {isLiked ? (
-                    <SolidHandThumbUpIcon className="icon" />
+                    <HiMiniHandThumbUp className="icon" size={24} />
                   ) : (
-                    <OutlineHandThumbUpIcon className="icon" />
+                    <HiOutlineHandThumbUp className="icon" size={24} />
                   )}
-                  <p className="my-auto text-xl">{data.likes.length}</p>
+                  <p className="my-auto text-xl">
+                    {item.likes > 0 && item.likes}
+                  </p>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Like</p>
               </TooltipContent>
             </Tooltip>
-            <RocketLaunchIcon className="m-3 flex-1 cursor-pointer" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  onClick={toggleRocket}
+                  className="m-2 flex-1 flex justify-center gap-1 "
+                >
+                  {isRocket ? (
+                    <BsFillRocketFill className="icon" size={24} />
+                  ) : (
+                    <BsRocket className="icon" size={24} />
+                  )}
+                  {/* <p className="my-auto text-xl">{data.likes.length}</p> */}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Rocket</p>
+              </TooltipContent>
+            </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <div
                   onClick={toggleComment}
-                  className="m-3 flex-1 flex justify-center text-rose-800 gap-1"
+                  className="m-2 flex-1 flex justify-center gap-1"
                 >
                   {isCommentOpen ? (
-                    <SolidComment className="icon" />
+                    <BiSolidCommentDetail className="icon" size={24} />
                   ) : (
-                    <OutlineComment className="icon" />
+                    <BiCommentDetail className="icon" size={24} />
                   )}
-                  <p className="my-auto text-xl">{data.comments.length}</p>
+                  {/* <p className="my-auto text-xl">{data.comments.length}</p> */}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -176,7 +192,7 @@ const Post = ({ data }: { data: any }) => {
           </div>
         </TooltipProvider>
       </CardContent>
-      <CardFooter className="flex justify-between p-0">
+      {/* <CardFooter className="flex justify-between p-0">
         <div
           className={`${
             isCommentOpen ? "max-h-80" : "hidden"
@@ -196,34 +212,51 @@ const Post = ({ data }: { data: any }) => {
           })}
           <div className="flex w-full mt-6 items-center space-x-2 ">
             <Input type="email" placeholder="Comment" />
-            <Button type="submit">Send <PaperPlaneIcon className="ml-1"/></Button>
+            <Button type="submit">
+              Send <PaperPlaneIcon className="ml-1" />
+            </Button>
           </div>
         </div>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 };
 
-const posts = () => {
+const Posts = () => {
   const numberOfSkeletons = 3;
+  const [posts, setPosts] = React.useState<Post[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const getPosts = async () => {
+      const { data, error } = await supabase.from("posts").select();
+      if (error) {
+        console.log("error", error);
+      } else {
+        setPosts(data);
+      }
+    };
+    getPosts();
+  }, []);
+
   return (
-    <ScrollArea className="w-full md:w-1/2 p-4 mt-2 gap-4">
+    <ScrollArea className="w-full md:w-[80%] p-4 mt-2 gap-4">
       {/* <h4 className="mb-4 text-lg font-medium leading-none text-center">Posts</h4> */}
-      {dummy_posts.length > 0 ? ( // Check if dummy_posts is not empty
-        dummy_posts.map((item: any) => (
-          <div key={item._id} className="mb-6">
-            <Post data={item} />
-          </div>
-        ))
-      ) : (
-        Array.from({ length: numberOfSkeletons }).map((_, index) => (
-          <div key={index} className="mb-6">
-            <SkeletonCard />
-          </div>
-        ))
-      )}
+      <div className="grid grid-cols-2 gap-6">
+        {posts.length > 0 // Check if dummy_posts is not empty
+          ? posts.map((item: any) => (
+              <div key={item.id} className="mb-6">
+                <Post item={item} />
+              </div>
+            ))
+          : Array.from({ length: numberOfSkeletons }).map((_, index) => (
+              <div key={index} className="mb-6">
+                <SkeletonCard />
+              </div>
+            ))}
+      </div>
     </ScrollArea>
   );
 };
 
-export default posts;
+export default Posts;

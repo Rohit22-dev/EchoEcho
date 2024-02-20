@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 
 const User = () => {
   return (
-    <Card className="w-full h-[40vw] p-2 flex flex-col items-center gap-2">
+    <Card className="w-full h-full p-2 flex flex-col items-center gap-2">
       <CardHeader>
         <Avatar className="w-[7vw] h-[7vw]">
           <AvatarImage src="https://github.com/shadcn.png" />
