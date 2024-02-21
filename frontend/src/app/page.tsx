@@ -53,10 +53,11 @@ const Page = () => {
       {loading ? (
         <Loading />
       ) : (
-        <div className="bg-background h-screen w-screen flex flex-col gap-6">
+        <div className="bg-background h-full w-full flex flex-col">
           <Header />
-          <div className="flex w-full mx-auto h-[85vh] ">
-            <div className="justify-center p-4 w-80 hidden md:flex h-full flex-col gap-10">
+          <div className="flex w-full mx-auto h-[90vh]">
+
+            <div className="justify-center p-4 w-1/6 hidden md:flex h-full flex-col gap-10">
               {/* <User /> */}
               <SideBar />
               {/* <PostForm setPosting={setPosting} />
@@ -66,11 +67,10 @@ const Page = () => {
             {/* Posts for the home page. */}
             <Posts />
 
-            <div className="justify-center p-6 w-1/4 hidden md:flex h-full">
+            <div className="justify-center p-4 w-1/4 hidden md:flex h-full">
               <div className="text-2xl bg-secondary/30 w-full h-full rounded-xl flex flex-col p-6">Page3</div>
             </div>
           </div>
-          <Footer />
         </div>
       )}
     </ThemeProvider>

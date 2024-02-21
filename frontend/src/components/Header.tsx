@@ -47,7 +47,7 @@ const Header = () => {
         </div>
         <div className="flex w-full max-w-md items-center space-x-2">
           <Input type="text" placeholder="search" />
-          <Button type="submit" variant="secondary"><MagnifyingGlassIcon/></Button>
+          <Button type="submit" variant="secondary"><MagnifyingGlassIcon className="w-5 h-5"/></Button>
         </div>
         <div className="flex gap-2">
           <ModeToggle />

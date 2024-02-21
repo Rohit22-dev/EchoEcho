@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Card,
   CardContent,
@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import { BsRocket, BsFillRocketFill } from "react-icons/bs";
 import { HiMiniHandThumbUp, HiOutlineHandThumbUp } from "react-icons/hi2";
+import { AiOutlineSend } from "react-icons/ai";
 import { BiCommentDetail, BiSolidCommentDetail } from "react-icons/bi";
 import {
   Tooltip,
@@ -22,8 +23,10 @@ import { SkeletonCard } from "../SkeletonCard";
 import supabase from "../../../supabase";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "../ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { FetchProfile } from "../helper/Helper";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface Post {
   id: string;
@@ -42,27 +45,7 @@ type ProfileData = {
   about: string;
 };
 
-const Post = ({ item }: { item: any }) => {
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const getProfile = async () => {
-      const { status, data, error } = await FetchProfile();
-      if (status === "failed") {
-        toast({
-          variant: "destructive",
-          description: error,
-          title: "Error fetching profile",
-        });
-        router.push("/login");
-      }
-      setProfile(data);
-    };
-
-    getProfile();
-  }, [router]);
-
+const Post = ({ item, profile }: { item: any; profile: any }) => {
   const [isLiked, setIsLiked] = React.useState(false);
   useEffect(() => {
     const fetchInitialLikeStatus = async () => {
@@ -87,6 +70,7 @@ const Post = ({ item }: { item: any }) => {
   const [isCommentOpen, setIsCommentOpen] = React.useState(false);
   const [isImageLoading, setIsImageLoading] = React.useState(true);
   const [isRocket, setIsRocket] = React.useState(true);
+  const [comments, setComments] = React.useState<any[] | null>(null);
 
   const toggleLike = async () => {
     setIsLiked(!isLiked);
@@ -103,8 +87,16 @@ const Post = ({ item }: { item: any }) => {
     setIsRocket(!isRocket);
   };
 
-  const toggleComment = () => {
+  const toggleComment = async () => {
     setIsCommentOpen(!isCommentOpen);
+    if (!isCommentOpen) {
+      const { data, error } = await supabase
+        .from("comments")
+        .select()
+        .eq("post_id", item.id)
+        .order("created_at", { ascending: false });
+      setComments(data);
+    }
   };
 
   const handleImageLoad = () => {
@@ -112,7 +104,7 @@ const Post = ({ item }: { item: any }) => {
   };
 
   return (
-    <Card className="w-full bg-secondary/20">
+    <Card className="bg-secondary/20">
       <CardHeader>
         <CardTitle className="text-primary">{item.username}</CardTitle>
         <CardDescription>{item.description}</CardDescription>
@@ -192,32 +184,32 @@ const Post = ({ item }: { item: any }) => {
           </div>
         </TooltipProvider>
       </CardContent>
-      {/* <CardFooter className="flex justify-between p-0">
+      <CardFooter className="flex justify-between p-0">
         <div
           className={`${
             isCommentOpen ? "max-h-80" : "hidden"
-          } ease-in-out transition-all duration-500 bg-background flex-1 rounded-md p-4 m-6`}
+          } ease-in-out transition-all duration-1000 bg-background flex-1 rounded-md p-4 m-6`}
         >
-          <h2 className="text-xl mb-2">Comments</h2>
-          {data.comments?.map((comment: any, i: number) => {
+          <h2 className="text-xl mb-2">Comments&nbsp;{comments?.length}</h2>
+          {comments?.map((item: any, i: number) => {
             return (
               <div
                 key={i}
                 className="flex justify-between bg-secondary/30 my-2 p-2 rounded-md"
               >
-                <p>{`• ${comment.content}`}</p>
-                <p className="italic text-emerald-700">{`@_${comment?.user?.username}`}</p>
+                <p>{`• ${item.comment}`}</p>
+                {/* <p className="italic text-emerald-700">{`@_${item?.user?.username}`}</p> */}
               </div>
             );
           })}
           <div className="flex w-full mt-6 items-center space-x-2 ">
             <Input type="email" placeholder="Comment" />
             <Button type="submit">
-              Send <PaperPlaneIcon className="ml-1" />
+              Send <AiOutlineSend className="ml-1" />
             </Button>
           </div>
         </div>
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   );
 };
@@ -225,11 +217,32 @@ const Post = ({ item }: { item: any }) => {
 const Posts = () => {
   const numberOfSkeletons = 3;
   const [posts, setPosts] = React.useState<Post[]>([]);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const router = useRouter();
 
   useEffect(() => {
+    const getProfile = async () => {
+      const { status, data, error } = await FetchProfile();
+      if (status === "failed") {
+        toast({
+          variant: "destructive",
+          description: error,
+          title: "Error fetching profile",
+        });
+        router.push("/login");
+      }
+      setProfile(data);
+    };
+
+    getProfile();
+  }, [router]);
+
+  useEffect(() => {
     const getPosts = async () => {
-      const { data, error } = await supabase.from("posts").select();
+      const { data, error } = await supabase
+        .from("posts")
+        .select()
+        .order("created_at", { ascending: false });
       if (error) {
         console.log("error", error);
       } else {
@@ -240,17 +253,17 @@ const Posts = () => {
   }, []);
 
   return (
-    <ScrollArea className="w-full md:w-[80%] p-4 mt-2 gap-4">
+    <ScrollArea className="p-4 w-full ">
       {/* <h4 className="mb-4 text-lg font-medium leading-none text-center">Posts</h4> */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6 ">
         {posts.length > 0 // Check if dummy_posts is not empty
           ? posts.map((item: any) => (
-              <div key={item.id} className="mb-6">
-                <Post item={item} />
+              <div key={item.id} className="col-span-2">
+                <Post item={item} profile={profile} />
               </div>
             ))
           : Array.from({ length: numberOfSkeletons }).map((_, index) => (
-              <div key={index} className="mb-6">
+              <div key={index} className="">
                 <SkeletonCard />
               </div>
             ))}

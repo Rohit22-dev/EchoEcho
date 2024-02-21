@@ -8,7 +8,7 @@ import { Poppins, Alegreya } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 // import { motion } from "framer-motion";
-import bar from "../../../public/Images/bar.png";
+import bar from "../../../public/images/bar.png";
 import Header from "@/components/Header";
 
 // const poppinsFont = Poppins({

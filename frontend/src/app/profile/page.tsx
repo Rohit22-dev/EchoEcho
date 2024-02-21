@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FetchProfile, Loader } from "@/components/helper/Helper";
 import supabase from "../../../supabase";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type ProfileData = {
   id: string;
@@ -66,7 +67,7 @@ const Profile = () => {
         {updating && <Loader loadState={updating} text="Updating" />}
 
         <div className="flex h-full justify-evenly p-4 gap-4">
-          <div className="flex gap-10 flex-col border rounded-md p-4 w-1/3">
+          <div className="flex gap-10 flex-col bg-secondary/30 rounded-md p-4 w-1/4">
             <div className="flex h-fit justify-between w-full text-2xl font-semibold ">
               <p className="text-primary italic">{profile?.username}</p>
               <EditProfileForm updating={updating} setUpdating={setUpdating} />
@@ -99,9 +100,9 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="flex gap-10 flex-col border rounded-md p-4 w-2/3">
+          <div className="flex gap-10 flex-col border rounded-md p-4 w-3/4">
             <h1 className="self-center text-2xl drop-shadow-md font-bold bg-gradient-to-r from-primary to-secondary-foreground text-transparent bg-clip-text">Posts</h1>
-            <div className="grid grid-cols-2 gap-4">
+            <ScrollArea className="grid grid-cols-2 gap-4 h-[80vh]">
               {userPosts.map((item) => (
                 <div key={item.id} className="flex flex-col gap-4 p-2 border rounded-md bg-secondary">
                   <Image
@@ -128,7 +129,7 @@ const Profile = () => {
                   </div> */}
                 </div>
               ))}
-            </div>
+            </ScrollArea>
           </div>
         </div>
       </div>
