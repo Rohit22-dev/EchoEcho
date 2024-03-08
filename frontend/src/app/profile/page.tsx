@@ -62,7 +62,7 @@ const Profile = () => {
       enableSystem
       disableTransitionOnChange
     >
-      <div className="flex flex-col bg-background gap-4 h-full">
+      <div className="flex flex-col bg-background gap-4 h-full w-4/5 mx-auto">
         <Header />
         {updating && <Loader loadState={updating} text="Updating" />}
 

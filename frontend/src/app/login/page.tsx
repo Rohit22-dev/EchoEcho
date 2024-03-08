@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 // import { motion } from "framer-motion";
 import bar from "../../../public/images/bar.png";
+import auth from "../../../public/images/auth.png";
+import auth1 from "../../../public/images/auth1.png";
 import Header from "@/components/Header";
 
 // const poppinsFont = Poppins({
@@ -78,7 +80,7 @@ const Login = () => {
               <h1 className="text-8xl font-semibold drop-shadow-md font-alegreya">
                 EchoEcho
               </h1>
-              <Image src={bar} alt="bar" height={300} />
+              <Image src={auth} alt="bar" height={600} />
               <p
                 className="text-3xl mx-auto leading-7 tracking-tight after:content-['|'] after:w-[0.125em] after:animate-blinking-bar"
               >
