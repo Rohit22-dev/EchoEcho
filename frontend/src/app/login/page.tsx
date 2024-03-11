@@ -4,46 +4,32 @@ import { ProfileForm } from "@/components/Form";
 import { ThemeProvider } from "@/components/theme-provider";
 import React, { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Poppins, Alegreya } from "next/font/google";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
-// import { motion } from "framer-motion";
 import bar from "../../../public/images/bar.png";
 import auth from "../../../public/images/auth.png";
-import auth1 from "../../../public/images/auth1.png";
-import Header from "@/components/Header";
 
-// const poppinsFont = Poppins({
-//   subsets: ["latin"],
-//   weight: ["400"],
-// });
-
-// const alegreyaFont = Alegreya({
-//   subsets: ["latin"],
-//   weight: ["400", "700"],
-// });
 
 const Login = () => {
   const [typedText, setTypedText] = React.useState("");
 
-  useEffect(() => {
-    const slogans = [
-      "Welcome to the Auth page.",
-      "Please login or register to continue",
-    ];
-    let index = 1;
-    let sloganIndex = 0;
-    let direction = 1;
-    const interval = setInterval(() => {
-      setTypedText(slogans[sloganIndex].slice(0, index + 1));
-      if (index === 0 || index === slogans[0].length - 1) {
-        if (index === 0) sloganIndex = (sloganIndex + 1) % slogans.length;
-        direction *= -1;
-      }
-      index += direction;
-    }, 250);
-    return () => clearInterval(interval);
-  }, []);
+  // useEffect(() => {
+  //   const slogans = [
+  //     "Welcome to the Auth page.",
+  //     "Please login or register to continue",
+  //   ];
+  //   let index = 1;
+  //   let sloganIndex = 0;
+  //   let direction = 1;
+  //   const interval = setInterval(() => {
+  //     setTypedText(slogans[sloganIndex].slice(0, index + 1));
+  //     if (index === 0 || index === slogans[0].length - 1) {
+  //       if (index === 0) sloganIndex = (sloganIndex + 1) % slogans.length;
+  //       direction *= -1;
+  //     }
+  //     index += direction;
+  //   }, 250);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   return (
     <ThemeProvider
@@ -52,7 +38,7 @@ const Login = () => {
       enableSystem
       disableTransitionOnChange
     >
-      <div className="bg-background h-full w-screen flex flex-col">
+      <div className="bg-background h-screen w-screen flex flex-col">
         {/* {status === "authenticated" && <Header />} */}
         <div className="flex flex-grow">
           <div className="hidden lg:flex container w-2/5 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-400 to-blue-800 p-8 text-foreground justify-center text-center border-r-8 border-white/50">
@@ -81,11 +67,11 @@ const Login = () => {
                 EchoEcho
               </h1>
               <Image src={auth} alt="bar" height={600} />
-              <p
+              {/* <p
                 className="text-3xl mx-auto leading-7 tracking-tight after:content-['|'] after:w-[0.125em] after:animate-blinking-bar"
               >
                 {typedText}
-              </p>
+              </p> */}
               <footer className="">Footer</footer>
             </div>
           </div>

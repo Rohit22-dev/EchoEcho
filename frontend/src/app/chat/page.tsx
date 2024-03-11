@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { AiOutlineSend } from "react-icons/ai";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const page = () => {
   return (
@@ -27,6 +28,7 @@ const page = () => {
                 <MagnifyingGlassIcon className="w-5 h-5" />
               </Button>
             </div>
+            <Separator className="my-4" />
           </div>
           <div className="w-3/4 bg-secondary/30 h-full rounded-xl p-4">
             <div className="border rounded-xl h-full flex flex-col overflow-hidden">
